@@ -1,6 +1,6 @@
 # cryprompt
 
-TODO: Write a description here
+A crystal library for creating easy prompting cli tools in crystal 
 
 ## Installation
 
@@ -9,7 +9,7 @@ TODO: Write a description here
    ```yaml
    dependencies:
      cryprompt:
-       github: your-github-user/cryprompt
+       github: CausticKirbyZ/cryprompt
    ```
 
 2. Run `shards install`
@@ -36,4 +36,4 @@ TODO: Write development instructions here
 
 ## Contributors
 
-- [your-name-here](https://github.com/your-github-user) - creator and maintainer
+- [CausticKirbyZ](https://github.com/CausticKirbyZ) - creator and maintainer
