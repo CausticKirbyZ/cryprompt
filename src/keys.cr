@@ -65,6 +65,7 @@ module CryPrompt
         Ctrl_Y = "\u0019"
         Ctrl_Z = "\u001A"
 
+
         # Returns true if a alphanumeric char or symbol ie a-z A-Z 0-9 and !@#$%^&*()_+{}[]|\"':;<>,./?~`"  
         # Does NOT include space
         def self.alpha_numeric_symbol?(char : String )
@@ -76,32 +77,27 @@ module CryPrompt
         end
         # Returns true if a alphanumeric char or symbol ie a-z A-Z 0-9 and !@#$%^&*()_+{}[]|\"':;<>,./?~`"  
         # Does NOT include space
-        def self.alpha_numeric_symbol?(char : Char  )
+        def self.alpha_numeric_symbol?( char : Char  )
             return true if 33 <= char.ord <= 126
             return false
         end
 
         # Returns true if supplied char is an arrow key.
         def self.is_arrow?(char : String  )
-            return true if char == UpArrow
-            return true if char == DownArrow
-            return true if char == LeftArrow
-            return true if char == RightArrow
+            return true if char == Keys::UpArrow
+            return true if char == Keys::DownArrow
+            return true if char == Keys::LeftArrow
+            return true if char == Keys::RightArrow
             return false
         end
 
-        # Reads a single character in and returns it as a string.
-        def self.read_char() # done 
-            input = ""
-            STDIN.raw do |io|
-                buffer = Bytes.new(8)
-                bytes_read = io.read(buffer) 
-                return nil if bytes_read == 0 
-                input = String.new(buffer[0, bytes_read])
-            end
-        
-            input 
+        # telss if a char is escaped(its a special char ie starts with \e )
+        def self.is_escaped?(char : String )
+            char[0] == "\e"
         end
-
+        def self.is_escaped?(char : Char )
+            char == "\e"
+        end
+        
     end
 end

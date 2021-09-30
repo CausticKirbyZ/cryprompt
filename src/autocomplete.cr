@@ -1,8 +1,16 @@
+require "json"
+require "yaml"
+
 module CryPrompt
-    class TabComplete 
+    class AutoComplete 
         property completion : (JSON::Any | YAML::Any | Nil) = nil
 
-        def initialize    
+        def initialize()
+
+        end
+        
+        def initialize(@completion)
+
         end
 
 
@@ -35,7 +43,7 @@ module CryPrompt
                 if spl.size > 1 
                   # if more than one word recurse without the first word and suggest on that if the first word is in the mapping
                   begin 
-                    sugs = get_suggestions(line.split(" ")[1..].join(" "), completion[ spl[0] ] ) if sugs.includes? spl[0].strip(" ")
+                    sugs = suggestions(line.split(" ")[1..].join(" "), completion[ spl[0] ] ) if sugs.includes? spl[0].strip(" ")
                   rescue 
                     # clear_nextline() # clear the line if fail 
                   end
@@ -51,5 +59,58 @@ module CryPrompt
 
 
 
+          # will render a suggestion box just below the word the person is typing 
+          def render()
+            # clear the next 5 or 6 lines 
+            # take 5 lines 
+            # set background to gray for printed lines 
+            # draw a box with the ┐ └  ┘ ┌
+            # 
+
+            clear_line_below()
+          end
+
+
+          def chose_from_render()
+
+          end
+
+
+          def clear_line_below()
+            puts " " * 100
+            puts " " * 100
+            puts " " * 100
+            puts " " * 100
+            puts " " * 100
+            puts " " * 100
+            puts " " * 100
+          end
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
+          # end code
     end
 end
