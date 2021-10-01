@@ -9,12 +9,12 @@ require "yaml"
 
 # TODO: Write documentation for `CryPrompt`
 module CryPrompt
-    VERSION = "0.0.1"
+    VERSION = "0.0.2"
     
     class CryPrompt
 
         property history : History 
-        property prompt : String = "\-\> "
+        property prompt : String = "(#{"CryPrompt="}#{VERSION})> "
         property completion : ( JSON::Any | YAML::Any | Nil) = nil
         property autoprompt : Bool = true 
         property logging : String | Nil = nil
@@ -46,6 +46,7 @@ module CryPrompt
         protected def get_line()
             @current_line = ""
             @line_index = 0
+            @history.index = 0
             # get key presses until the user hits enter 
             while true 
                 char = @keyboard.read_char()
