@@ -170,7 +170,10 @@ module CryPrompt
         def tabcomplete()
             suggs = @autocomplete.suggestions(@current_line)
             if suggs # if we have suggestions
-                return if suggs.size < 1 
+                if suggs.size < 1 
+                    @autocomplete.clear_x_below(6, @line_index + @prompt.size)
+                    return 
+                end
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
                 @autocomplete.render(suggs, @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last  )
 

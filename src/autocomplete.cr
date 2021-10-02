@@ -77,6 +77,7 @@ module CryPrompt
                 comp = completion.as_a? # if not a hash it should be an array being the final options 
                 if comp
                 # create init suggestion list 
+                    lw = true 
                     comp.each do |i| 
                         candidates << i.to_s 
                     end
@@ -128,6 +129,10 @@ module CryPrompt
             # set background to gray for printed lines 
             # draw a box with the ┐ └  ┘ ┌
             # 
+
+            if opts.size < 1 
+                clear_x_below(6,current_line_index)
+            end
 
             max_size = 0 
             opts.each do |i|
