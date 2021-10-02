@@ -8,7 +8,7 @@ module CryPrompt
         LeftArrow = "\e[D"
 
         Insert = "\e[2~"
-        Del  = "\e[3~"
+        Delete  = "\e[3~"
         Home = "\e[1~"
         End  = "\e[4~"
         PgUp = "\e[5~"

@@ -1,6 +1,15 @@
-# cryprompt
+# CryPrompt
 
-A crystal library for creating easy prompting cli tools in crystal 
+A crystal library for creating easy prompting cli tools in crystal.  I Wanted a prompting kit with easy to use tab completion/suggestion while also having a nice easy hierarchy for the suggestion table. 
+
+## Suggestion Table
+
+
+
+
+
+
+
 
 ## Installation
 
