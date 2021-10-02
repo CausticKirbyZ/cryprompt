@@ -9,14 +9,14 @@ require "yaml"
 
 # TODO: Write documentation for `CryPrompt`
 module CryPrompt
-    VERSION = "0.0.3"
+    VERSION = "0.0.4"
     
     class CryPrompt
 
         property history : History 
         property prompt : String = "(#{"CryPrompt="}v#{VERSION})> "
         # property completion : ( JSON::Any | YAML::Any | Nil) = nil
-        property autoprompt : Bool = true 
+        property autoprompt : Bool = true
         property logging : String | Nil = nil
         property autocomplete : AutoComplete = AutoComplete.new()
 
@@ -59,7 +59,7 @@ module CryPrompt
                 char = @keyboard.read_char()
                 next if char.nil? 
                 if completed_there # clear the completed line if there is one
-                    @autocomplete.clear_line_below(@line_index) 
+                    @autocomplete.clear_x_below(5, @line_index) 
                     completed_there = false 
                 end
 
@@ -117,8 +117,9 @@ module CryPrompt
                     
                     case char 
                     when Keys::Tab
-                         tabcomplete()
+                         tabcomplete() 
                          completed_there = true 
+                         next
                     when Keys::Delete
                         next if @line_index >= @current_line.size
                         t = @current_line.split( "" )
@@ -148,6 +149,9 @@ module CryPrompt
                 end
 
 
+                tabcomplete() if autoprompt
+
+
 
 
 
@@ -166,7 +170,9 @@ module CryPrompt
         def tabcomplete()
             suggs = @autocomplete.suggestions(@current_line)
             if suggs # if we have suggestions
-                @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
+                # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
+                @autocomplete.render(suggs, @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last  )
+
             end
         end
 

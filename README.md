@@ -3,8 +3,20 @@
 A crystal library for creating easy prompting cli tools in crystal.  I Wanted a prompting kit with easy to use tab completion/suggestion while also having a nice easy hierarchy for the suggestion table. 
 
 ## Suggestion Table
+The flow of suggested material is in the form of a hash and can be written in json or yaml quite easily. 
 
-
+ex. 
+```
+---
+hello: 
+  to:
+    - you
+    - jeff
+    - jessie 
+    - jane
+  world:
+```
+the word "hello" defines the base of this tree and will have 2 sub suggestions "to" and "world".
 
 
 

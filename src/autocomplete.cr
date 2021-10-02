@@ -1,6 +1,7 @@
 require "json"
 require "yaml"
-
+require "colorize"
+require "math"
 require "./keys"
 
 module CryPrompt
@@ -12,7 +13,6 @@ module CryPrompt
         end
 
         def initialize(@completion)
-
         end
 
 
@@ -61,14 +61,45 @@ module CryPrompt
 
 
         # will render a suggestion box just below the word the person is typing 
-        def render()
-          # clear the next 5 or 6 lines 
-          # take 5 lines 
-          # set background to gray for printed lines 
-          # draw a box with the ┐ └  ┘ ┌
-          # 
+        def render(opts : Array(String), current_line_index, word)
+            # clear the next 5 or 6 lines 
+            # take 5 lines 
+            # set background to gray for printed lines 
+            # draw a box with the ┐ └  ┘ ┌
+            # 
 
-          clear_x_below(5)
+            max_size = 0 
+            opts.each do |i|
+                if max_size < i.size  
+                    max_size = i.size 
+                end
+            end
+
+
+            clear_x_below(6, current_line_index)
+            print "\n" # move to next line 
+            # "┌─".colorize.fore(:green).mode(:bold)
+            word_start = current_line_index
+            # get to below the word 
+            # print Keys::RightArrow * current_line_index
+            print "#{" " * (current_line_index)}┌#{"─" * ( max_size + 4 ) }┐".colorize.fore(:green).mode(:bold)            
+            print "\n"
+            opts[0..Math.min(5,opts.size)].each do |opt|
+                print " " * (current_line_index)
+                print "│ ".colorize.fore(:green).mode(:bold)
+                print opt 
+                print " " * (max_size - opt.size)
+                print "   │\n".colorize.fore(:green).mode(:bold)
+            end
+            print "#{" " * (current_line_index)}└#{"─" * (max_size + 4 ) }┘".colorize.fore(:green).mode(:bold)
+
+            print Keys::UpArrow * Math.min(7, opts.size + 2 ) # need to account for the 2 boarder spaces
+            print "\r"
+            print Keys::RightArrow * ( current_line_index + word.size )
+
+
+
+
         end
 
 
@@ -81,6 +112,16 @@ module CryPrompt
           print "\n"
           print " " * 100
           print "\r#{Keys::UpArrow}#{Keys::RightArrow * current_line_index}"
+        end
+
+
+        def clear_x_below(number_of_lines, current_line_index)
+          number_of_lines.times do 
+            print "\n"
+            print " " * 100
+          end
+          print Keys::UpArrow * number_of_lines
+          print "\r#{Keys::RightArrow * current_line_index}"
         end
   
 
