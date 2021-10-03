@@ -17,7 +17,7 @@ module CryPrompt
         Backspace = "\u007F"
         Tab = "\t"
         Return = "\r"
-        
+        Pause = "\u001A"
 
         F1 = "\eOP"
         F2 = "\eOQ"
@@ -64,6 +64,40 @@ module CryPrompt
         Ctrl_X = "\u0018"
         Ctrl_Y = "\u0019"
         Ctrl_Z = "\u001A"
+
+
+        Ctrl_Insert     =  "\e[2;5~"
+        Ctrl_Delete     =  "\e[3;5~"
+        Ctrl_Home       =  "\e[1;5H"
+        Ctrl_End        =  "\e[1;5F"
+        Ctrl_PgUp       =  "\e[5;5~"
+        Ctrl_PgDown     =  "\e[6;5~"
+
+
+        Shift_Tab           = "\e[Z"
+        Shift_Delete        = "\e[3;2~"
+        Shift_End           = "\e[1;2F"
+        # Shift_Insert        = "\\e[6;2~" # NO IDEA?>?? shift insert is pase in linux terminals..... 
+        Shift_Home          = "\e[1;2H"
+        Shift_PgUp          = "\e[5;2~"
+        Shift_PgDown        = "\e[6;2~"
+
+        Shift_UpArrow       = "\e[1;2A"
+        Shift_DownArrow     = "\e[1;2B"
+        Shift_LeftArrow     = "\e[1;2D"
+        Shift_RightArrow    = "\e[1;2C"
+
+        ClearScreen         = "\e[2J"
+        ClearScreenBelow    = "\e[J"
+        ClearScreenAbove    = "\e[1J"
+
+
+        
+
+
+
+
+
 
 
         # Returns true if a alphanumeric char or symbol ie a-z A-Z 0-9 and !@#$%^&*()_+{}[]|\"':;<>,./?~`"  

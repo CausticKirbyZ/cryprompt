@@ -26,8 +26,9 @@ module CryPrompt
             @current_line = "" # this will be the buffer for the current line 
             @ctrl_c_count = 0 
             @printer = CryPrinter.new(prompt)
-            
+            @tab_count  = -1 # keep track of consecutive tabs to cycle through suggestions 
             @line_index = 0 # current cursor index in the current line 
+            @word_completion = "" # the part of the word to be completed 
         end
 
 
@@ -59,17 +60,28 @@ module CryPrompt
                 char = @keyboard.read_char()
                 next if char.nil? 
                 if completed_there # clear the completed line if there is one
-                    @autocomplete.clear_x_below(5, @line_index) 
+                    # @autocomplete.clear_x_below(5, @line_index) 
+                    print Keys::ClearScreenBelow # ansi escape code for clearing from cursor to end of terminal. its faster and cleaner than using print \n + " " * 100 or something 
                     completed_there = false 
                 end
 
-                if char == Keys::Return # ie they hit enter 
+                if char == Keys::Return # ie they hit enter
+                    if  @word_completion != ""
+                        @current_line += @word_completion
+                        @line_index += @word_completion.size
+                        print @word_completion
+                        @word_completion = ""
+                        @tab_count = -1 
+                        next 
+                    end
+                    
                     break 
                 end
 
                 if char == Keys::Ctrl_C # handle ctrl c 
                     # raise "Ctrl C Pressed"
-                    print "\n"
+                    # @autocomplete.clear_x_below(7,@line_index)
+                    print "#{Keys::ClearScreenBelow}\n"
                     return nil
                     # @current_line = ""
                     # @ctrl_c_count += 1 
@@ -116,10 +128,21 @@ module CryPrompt
                     end
                     
                     case char 
+                    # tab completion
                     when Keys::Tab
-                         tabcomplete() 
-                         completed_there = true 
-                         next
+                        @tab_count += 1 
+                        t = tabcomplete(@tab_count)
+                        @word_completion = t if t
+                        completed_there = true 
+                        next
+                    when Keys::Shift_Tab # rotate upwards through list 
+                        @tab_count -= 1 unless @tab_count < 0 
+                        t = tabcomplete(@tab_count)
+                        @word_completion = t if t
+                        completed_there = true 
+                        next
+
+
                     when Keys::Delete
                         next if @line_index >= @current_line.size
                         t = @current_line.split( "" )
@@ -143,11 +166,10 @@ module CryPrompt
                 end
 
                 
-                print "\r#{@prompt}#{@current_line} \b" # the space + \b is to make sure that any backspaced char gets removed
+                print "\r#{@prompt}#{@current_line} \b#{@word_completion.colorize.mode(:dim).to_s }" # the space + \b is to make sure that any backspaced char gets removed
                 if @line_index < @current_line.size 
                     print Keys::LeftArrow * ( @current_line.size - @line_index ) 
                 end
-
 
                 tabcomplete() if autoprompt
 
@@ -156,7 +178,7 @@ module CryPrompt
 
 
             end
-            puts ""
+            print "\e[J\n" # clear the screen and move to next line
             # clear the current line and let the garbage collector get rid of cl
             @history << @current_line.strip() unless @current_line == "\r"
             cl = @current_line
@@ -176,8 +198,30 @@ module CryPrompt
                 end
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
                 @autocomplete.render(suggs, @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last  )
-
             end
+        end
+
+        def tabcomplete(tabcount)
+            if tabcount <= -1 
+                tabcomplete()
+                return ""
+            end
+            suggs = @autocomplete.suggestions(@current_line)
+
+           
+
+            if suggs # if we have suggestions
+                if @tab_count >= suggs.size
+                    @tab_count = -1
+                end
+                if suggs.size < 1 
+                    @autocomplete.clear_x_below(6, @line_index + @prompt.size)
+                    return 
+                end
+                # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
+                return @autocomplete.render(suggs[Math.min(tabcount, Math.max(tabcount - 4, 0))..], @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last, Math.min(tabcount, 4 )  )
+            end
+            return ""
         end
 
 
