@@ -9,7 +9,7 @@ require "yaml"
 
 # TODO: Write documentation for `CryPrompt`
 module CryPrompt
-    VERSION = "0.0.4"
+    VERSION = "0.0.5"
     
     class CryPrompt
 
