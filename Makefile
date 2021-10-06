@@ -1,3 +1,3 @@
 .SILENT:
 all:
-	crystal build -p test.cr
+	crystal build -p examples/test.cr

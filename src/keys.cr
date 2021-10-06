@@ -116,6 +116,27 @@ module CryPrompt
             return false
         end
 
+        # returns true if ascii printable ()
+        def self.ascii_printable?(char : String)
+            if char.class == String 
+                return nil if char.size > 1 
+                return false if char[0].ord == 127 # del 
+                return true if 32 <= char[0].ord < 255
+            end
+            return false 
+        end
+
+        # returns true if ascii printable ()
+        def self.ascii_printable?(char : Char)
+            return false if char.ord == 127 # del 
+            return true if 32 <= char.ord < 255
+            return false 
+        end
+
+
+
+
+
         # Returns true if supplied char is an arrow key.
         def self.is_arrow?(char : String  )
             return true if char == Keys::UpArrow

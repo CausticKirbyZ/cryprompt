@@ -7,14 +7,13 @@ require "./autocomplete"
 require "json"
 require "yaml"
 
-# TODO: Write documentation for `CryPrompt`
 module CryPrompt
-    VERSION = "0.0.5"
+    VERSION = "0.0.6"
     
     class CryPrompt
 
         property history : History 
-        property prompt : String = "(#{"CryPrompt="}v#{VERSION})> "
+        property prompt : String = "(#{"CryPrompt=".to_s}v#{VERSION})> "
         # property completion : ( JSON::Any | YAML::Any | Nil) = nil
         property autoprompt : Bool = true
         property logging : String | Nil = nil
@@ -39,16 +38,7 @@ module CryPrompt
             (x = get_line()) ? x : nil
         end
 
-        # def update_completions()
-        #     @autocompleter = AutoComplete.new(completion)
-        # end
 
-
-
-
-        # gets a line from the user 
-        # this can handle a decent amount of the logic behind the "terminal feel"
-        # ie tab complete, special key handling, suggestions...etc 
         protected def get_line()
             @current_line = ""
             @line_index = 0
@@ -65,7 +55,7 @@ module CryPrompt
                     completed_there = false 
                 end
 
-                if char == Keys::Return # ie they hit enter
+                if char == Keys::Return# ie they hit enter
                     if  @word_completion != ""
                         @current_line += @word_completion
                         @line_index += @word_completion.size
@@ -91,7 +81,8 @@ module CryPrompt
                     # next 
                 end
 
-                if Keys.alpha_numeric_symbol?(char) || char == " " # if key pressed is something we need to print
+                # if Keys.alpha_numeric_symbol?(char) || char == " " # if key pressed is something we need to print
+                if Keys.ascii_printable? char
                     # @printer.print char
                     # @current_line += char 
                     temp = @current_line.split("")
@@ -117,17 +108,25 @@ module CryPrompt
                         downarrowpress()
                     end
 
-                else # handle all the escaped/special chars  
-                    if char == Keys::Backspace && @current_line.size > 0 # remove from current line 
+                else # handle all the escaped/special chars  and also copy and pasted data
+                    # if char == Keys::Backspace # remove from current line 
+                    #     next if @current_line.size <= 0 
+                    #     next if @line_index <= 0
+                    #     t = @current_line.split("")
+                    #     t.delete_at( @line_index - 1 ) 
+                    #     @current_line = t.join
+                    #     @line_index -= 1 #  if @line_index > 0
+                    # else
+                    # end
+                    
+                    case char 
+                    when Keys::Backspace
+                        next if @current_line.size <= 0 
                         next if @line_index <= 0
                         t = @current_line.split("")
                         t.delete_at( @line_index - 1 ) 
                         @current_line = t.join
                         @line_index -= 1 #  if @line_index > 0
-                    else
-                    end
-                    
-                    case char 
                     # tab completion
                     when Keys::Tab
                         @tab_count += 1 
@@ -141,8 +140,6 @@ module CryPrompt
                         @word_completion = t if t
                         completed_there = true 
                         next
-
-
                     when Keys::Delete
                         next if @line_index >= @current_line.size
                         t = @current_line.split( "" )
@@ -160,10 +157,34 @@ module CryPrompt
                     when Keys::PgUp
                     end
 
+                        # when char.size >= 8
+                    # else # handle the copy pasted data
+                    if Keys.ascii_printable?(char[0]) # if its ascii
+                        temp = @current_line.split("")
+                        temp2 = char.split ""
+                        temp2.each do |c| 
+                            # if c == "\n" # need to handle the "\n" char in pasted data somehow but not 100% on how 
+                            #     print "\n"
+                            #     next
+                            # end
+                            temp.insert( @line_index, c)
+                            @line_index += 1 
+                        end
+                        # @line_index += char.size
+                        @current_line = temp.join("")
+                    
+                    # end
+                        # p "Error How you get here? #{char}"
+                        # temp = @current_line.split("")
+                        # temp.insert( @line_index, char)
+                        # @line_index += temp.size
+                        # @current_line = temp.join("")
+                    end
+
 
 
                     # next 
-                end
+                end # end get char while loop
 
                 
                 print "\r#{@prompt}#{@current_line} \b#{@word_completion.colorize.mode(:dim).to_s }" # the space + \b is to make sure that any backspaced char gets removed
@@ -172,6 +193,7 @@ module CryPrompt
                 end
 
                 tabcomplete() if autoprompt
+                @tab_count = -1
 
 
 
@@ -215,7 +237,8 @@ module CryPrompt
                     @tab_count = -1
                 end
                 if suggs.size < 1 
-                    @autocomplete.clear_x_below(6, @line_index + @prompt.size)
+                    # @autocomplete.clear_x_below(6, @line_index + @prompt.size)
+                    print Keys::ClearScreenBelow
                     return 
                 end
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
@@ -243,14 +266,16 @@ module CryPrompt
 
 
         def uparrowpress() 
-            print "\r #{" " * 80 }\r#{@prompt}"
+            # print "\r #{" " * 80 }\r#{@prompt}"
+            print Keys::ClearScreenBelow
             @current_line = @history.up()
             # @history.up()
             @line_index = @current_line.size 
         end
 
         def downarrowpress()
-            print "\r #{" " * 80 }\r#{@prompt}"
+            # print "\r #{" " * 80 }\r#{@prompt}"
+            print Keys::ClearScreenBelow
             @current_line = @history.down()
             # @history.down()                        
             @line_index = @current_line.size 

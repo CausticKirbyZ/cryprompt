@@ -2,12 +2,20 @@
 
 A crystal library for creating easy prompting cli tools in crystal.  I Wanted a prompting kit with easy to use tab completion/suggestion while also having a nice easy hierarchy for the suggestion table. 
 
+<br>
+<img src="./pics/animationdemo.gif"> 
+
+## Features:
+* Text box suggestions  
+* easy suggestion path implementaion via yaml/json
+* tab complete (mostly)
+* multiple suggestions 
+
 ## Suggestion Table
 The flow of suggested material is in the form of a hash and can be written in json or yaml quite easily. 
 
 ex. 
-```
----
+```yaml
 hello: 
   to:
     - you
@@ -15,12 +23,16 @@ hello:
     - jessie 
     - jane
   world:
+  everyone:
+    with:
+      a:
+        - hat
+        - shirt
+        - shoes
+        - pants
 ```
-the word "hello" defines the base of this tree and will have 2 sub suggestions "to" and "world".
 
-
-
-
+The word "hello" defines the base of this tree and will have 2 sub suggestions "to" and "world".
 
 
 ## Installation
@@ -41,11 +53,18 @@ the word "hello" defines the base of this tree and will have 2 sub suggestions "
 require "cryprompt"
 ```
 
-TODO: Write usage instructions here
+# Development
 
-## Development
+## ToDo:
+* hitting tab will autocomplete if only 1 suggestion exists 
+* expose some options to change the autoprompt box color 
+* refactor the autocomplete class to use escape codes for faster/easier cursor management 
 
-TODO: Write development instructions here
+
+## Bugs:
+* pasting with multiple lines is broken. 
+* colored prompts will break the location of the cursor apearance
+
 
 ## Contributing
 
