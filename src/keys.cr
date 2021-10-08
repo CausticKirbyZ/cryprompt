@@ -91,6 +91,9 @@ module CryPrompt
         ClearScreenBelow    = "\e[J"
         ClearScreenAbove    = "\e[1J"
 
+        SCOSC  = "\e[s"
+        SCORC  = "\e[u"
+
 
         
 

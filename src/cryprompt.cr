@@ -69,16 +69,10 @@ module CryPrompt
                 end
 
                 if char == Keys::Ctrl_C # handle ctrl c 
-                    # raise "Ctrl C Pressed"
-                    # @autocomplete.clear_x_below(7,@line_index)
+                    
                     print "#{Keys::ClearScreenBelow}\n"
+                    raise Ctrl_C_Exception.new("Ctrl C Pressed")
                     return nil
-                    # @current_line = ""
-                    # @ctrl_c_count += 1 
-                    # @line_index = 0
-                    # return nil if @ctrl_c_count > 1
-                    # print @prompt
-                    # next 
                 end
 
                 # if Keys.alpha_numeric_symbol?(char) || char == " " # if key pressed is something we need to print
@@ -215,7 +209,8 @@ module CryPrompt
             suggs = @autocomplete.suggestions(@current_line)
             if suggs # if we have suggestions
                 if suggs.size < 1 
-                    @autocomplete.clear_x_below(6, @line_index + @prompt.size)
+                    # @autocomplete.clear_x_below(6, @line_index + @prompt.size)
+                    print Keys::ClearScreenBelow
                     return 
                 end
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
@@ -229,7 +224,6 @@ module CryPrompt
                 return ""
             end
             suggs = @autocomplete.suggestions(@current_line)
-
            
 
             if suggs # if we have suggestions
@@ -237,12 +231,24 @@ module CryPrompt
                     @tab_count = -1
                 end
                 if suggs.size < 1 
-                    # @autocomplete.clear_x_below(6, @line_index + @prompt.size)
                     print Keys::ClearScreenBelow
                     return 
+                # elsif  suggs.size == 1 # only 1 thing to suggest so tab complete it 
+                    # clslast  =  @current_line.split(" ").last 
+                    # indx =  suggs[0].index(clslast)
+                    # if clslast && indx 
+                    #     t = clslast[(indx + clslast.size)..]
+                    #     return t if t
+                    # end
+                    # return suggs[0][@current_line.split(" ").last.size..]
+                    # return ""
+
                 end
+
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
                 return @autocomplete.render(suggs[Math.min(tabcount, Math.max(tabcount - 4, 0))..], @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last, Math.min(tabcount, 4 )  )
+                # @autocomplete.render_box( suggs[Math.min(tabcount,Math.max(tabcount - 4 , 0))..])  # didnt work 
+                return ""
             end
             return ""
         end
@@ -283,6 +289,10 @@ module CryPrompt
 
 
 
+    end
+
+
+    class Ctrl_C_Exception < Exception 
     end
 
 end

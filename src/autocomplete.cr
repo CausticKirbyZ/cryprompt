@@ -150,12 +150,57 @@ module CryPrompt
 
         end
 
+        # NOT WORKING (probably due to scos/rc)
+        # draws the box with the suggestions in it. 
+        # selected_index is the index in opts that will be selected to be highlighted
+        # max_size is the width of the box 
+        # max_suggested is how many items will be suggested at the maximum 
+        def render_box(opts : Array(String), selected_index : Int32 = -1, max_suggested : Int32 = 5, min_width_size : Int32 = 4  )
+            print Keys::SCOSC # save cursor position 
+            print "\n\n\n\n\n"
+            print Keys::SCORC 
+            print Keys::SCOSC
+
+            
+            opts.each do |i| # ensure that the box will be the appropriate size 
+                if min_width_size < i.size  
+                    min_width_size = i.size 
+                end
+            end
+
+            str = String.build do |str| # build the box and suggestions as 1 string so we only print once 
+                str << Keys::DownArrow # move directly down 
+                str << Keys::LeftArrow * 2 # offset so the suggestions are directly underneath the typing 
+                
+                #start drawing the suggestion box 
+                str << "┌#{"─" * ( min_width_size + 4 ) }┐".colorize.fore(:green).mode(:bold)
+                opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
+                    str << "\e[#{min_width_size + 6}#{Keys::DownArrow}" # move cursor back to box start and down a line 
+                    str << "│ ".colorize.fore(:green).mode(:bold) # next line draw the box 
+
+                    if index == selected_index
+                        str << opt.colorize.fore(:green).back(:blue).mode(:bold) 
+                    else 
+                        str << opt 
+                    end
+
+                    str << " " * (min_width_size - opt.size) # pad the rest of the line after opt with spaces
+                    str << "│".colorize.fore(:green).mode(:bold) # print the last box 
+                end
+                str << "└#{"─" * (min_width_size + 4 ) }┘".colorize.fore(:green).mode(:bold)
+            end
+            print str 
+
+
+            print Keys::SCORC # restore cursor position to previously saved state 
+        end
+
 
         def chose_from_render()
 
         end
 
-
+        # dont use this just use print Keys::ClearScreenBelow
         def clear_line_below(current_line_index)
           print "\n #{ " " * 100}\r#{Keys::UpArrow}#{Keys::RightArrow * current_line_index}"
         end
