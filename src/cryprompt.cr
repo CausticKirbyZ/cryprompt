@@ -8,11 +8,10 @@ require "json"
 require "yaml"
 
 module CryPrompt
-    VERSION = "0.0.6"
+    VERSION = "0.0.7"
     
     class CryPrompt
-
-        property history : History 
+        property history : History
         property prompt : String = "(#{"CryPrompt=".to_s}v#{VERSION})> "
         # property completion : ( JSON::Any | YAML::Any | Nil) = nil
         property autoprompt : Bool = true
@@ -37,7 +36,6 @@ module CryPrompt
             @printer.print_prompt()
             (x = get_line()) ? x : nil
         end
-
 
         protected def get_line()
             @current_line = ""
@@ -73,6 +71,12 @@ module CryPrompt
                     print "#{Keys::ClearScreenBelow}\n"
                     raise Ctrl_C_Exception.new("Ctrl C Pressed")
                     return nil
+                end
+
+                if char == Keys::Ctrl_D # debug key command
+                    puts "#{Keys::ClearScreenBelow}\n\n\tCurrent line:    \"#{@current_line}\"\n\tline_index:      #{@line_index}\n\tword_completion: \"#{@word_completion}\"\n\ttabcount:        #{@tab_count}\n\tSuggestions:      #{@autocomplete.suggestions(@current_line)}\n\n
+                    "
+                    next 
                 end
 
                 # if Keys.alpha_numeric_symbol?(char) || char == " " # if key pressed is something we need to print
@@ -121,19 +125,39 @@ module CryPrompt
                         t.delete_at( @line_index - 1 ) 
                         @current_line = t.join
                         @line_index -= 1 #  if @line_index > 0
+
+
                     # tab completion
                     when Keys::Tab
                         @tab_count += 1 
-                        t = tabcomplete(@tab_count)
-                        @word_completion = t if t
+                        tabsugs = @autocomplete.suggestions(@current_line)
+                        if tabsugs
+                            if tabsugs.size == 1 # do the completion for only 1 option 
+                                sp = @current_line.split()
+                                @word_completion = tabsugs.first[sp.last.size..] # only add the portion of the word that isnt there
+                                @line_index = @current_line.size + @word_completion.size + 1
+                                @current_line = "#{@current_line}#{@word_completion} "
+                                print "\r#{@prompt}#{@current_line}#{Keys::ClearScreenBelow}"
+
+                                @word_completion = ""
+                                @tab_count = -1
+                                next 
+                            elsif tabsugs.size > 1 
+                                t = tabcomplete(@tab_count, tabsugs )
+                                @word_completion = t if t 
+                            end
+                        end
                         completed_there = true 
                         next
                     when Keys::Shift_Tab # rotate upwards through list 
                         @tab_count -= 1 unless @tab_count < 0 
-                        t = tabcomplete(@tab_count)
+                        tabsugs = @autocomplete.suggestions(@current_line)
+                        t = tabcomplete(@tab_count,tabsugs)
                         @word_completion = t if t
                         completed_there = true 
                         next
+                    
+                    
                     when Keys::Delete
                         next if @line_index >= @current_line.size
                         t = @current_line.split( "" )
@@ -181,12 +205,14 @@ module CryPrompt
                 end # end get char while loop
 
                 
-                print "\r#{@prompt}#{@current_line} \b#{@word_completion.colorize.mode(:dim).to_s }" # the space + \b is to make sure that any backspaced char gets removed
+                print "\r#{@prompt}#{@current_line} \b"#{@word_completion.colorize.mode(:dim).to_s }" # the space + \b is to make sure that any backspaced char gets removed
                 if @line_index < @current_line.size 
                     print Keys::LeftArrow * ( @current_line.size - @line_index ) 
                 end
 
-                tabcomplete() if autoprompt
+                if autoprompt
+                    tabcomplete() unless Keys.is_arrow? char
+                end
                 @tab_count = -1
 
 
@@ -194,7 +220,7 @@ module CryPrompt
 
 
             end
-            print "\e[J\n" # clear the screen and move to next line
+            print "#{Keys::ClearScreenBelow}\n" # clear the screen and move to next line
             # clear the current line and let the garbage collector get rid of cl
             @history << @current_line.strip() unless @current_line == "\r"
             cl = @current_line
@@ -218,12 +244,12 @@ module CryPrompt
             end
         end
 
-        def tabcomplete(tabcount)
+        def tabcomplete(tabcount, suggs)
             if tabcount <= -1 
                 tabcomplete()
                 return ""
             end
-            suggs = @autocomplete.suggestions(@current_line)
+            # suggs = @autocomplete.suggestions(@current_line)
            
 
             if suggs # if we have suggestions
@@ -274,17 +300,20 @@ module CryPrompt
         def uparrowpress() 
             # print "\r #{" " * 80 }\r#{@prompt}"
             print Keys::ClearScreenBelow
-            @current_line = @history.up()
-            # @history.up()
-            @line_index = @current_line.size 
+            tmp = @history.up()
+            if tmp
+                @current_line = tmp 
+                @line_index = @current_line.size 
+            end
         end
 
         def downarrowpress()
             # print "\r #{" " * 80 }\r#{@prompt}"
-            print Keys::ClearScreenBelow
             @current_line = @history.down()
             # @history.down()                        
             @line_index = @current_line.size 
+            print "\r#{ Keys::RightArrow * (@prompt.size + @current_line.size) }"
+            print Keys::ClearScreenBelow
         end
 
 

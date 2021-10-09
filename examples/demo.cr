@@ -2,10 +2,11 @@ require "../src/cryprompt"
 require "yaml"
 
 #yaml complete config
-
+# _description is a key entry to describe the option
 yaml = YAML.parse "
 ---
 hello:
+  _description:
   to:
     - you
     - person
@@ -32,9 +33,10 @@ Goodbye:
   maybe:
     - this 
     - wont 
-    - work
+    - work 
 exit:
 whoami:
+clear:
 "
 
 json = JSON.parse %(
@@ -66,6 +68,7 @@ json = JSON.parse %(
 
 t = CryPrompt::CryPrompt.new();
 t.autocomplete.completion = yaml
+t.autocomplete.update_suggestions()
 t.autoprompt = true
 
 

@@ -74,7 +74,7 @@ module CryPrompt
 
         # increments the history index by 1
         def up
-            return "" if @history.size < 1 
+            return nil if @history.size < 1 
             # print "#{@index} "
             temp = @history[@index]
             @index += 1

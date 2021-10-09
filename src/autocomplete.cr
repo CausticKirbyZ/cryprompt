@@ -2,79 +2,138 @@ require "json"
 require "yaml"
 require "colorize"
 require "math"
+
 require "./keys"
+require "./cryprompttrie"
 
 module CryPrompt
     class AutoComplete 
-        property completion : (JSON::Any | YAML::Any | Nil) = nil
-
+        # load a yaml or json hash to parse from 
+        # you still need to call update_suggestions to parse it 
+        property completion : (JSON::Any | YAML::Any | Nil) = nil 
+        property sugtrie : CryPromptTrie = CryPromptTrie.new()
+        
         def initialize()
 
         end
 
         def initialize(@completion)
+            update_suggestions()
         end
-     
 
-        # returns the succestions for the current line
-        def suggestions(line : String, completion = @completion)
-            return nil if completion.nil? # if completion is a hash. ie will it have sub options 
-
-            sugs = [] of String
-            candidates = [] of String
-
+        # recursive function to generate the suggestion trie from a json or yaml structure
+        def update_suggestions(completion : ( JSON::Any | YAML::Any ) = @completion, trie : CryPromptTrie = @sugtrie)
+            return if completion.nil?
             # load the candidates from the hash
             comp = completion.as_h?
             if comp
                 # create init suggestion list 
-                comp.each do |k, v| 
-                    candidates << k.to_s
+                comp.each do |key, value|
+                    next if key == "_description" # ignore the description field as that is actually part of the parrent node
+                    temp_trie = CryPromptTrie.new(key.to_s) # create a node with the word set to the key from the completion hash
+                    begin 
+                        temp_trie.description = value["_description"].to_s # set description if it exists
+                    rescue 
+                    end
+                    update_suggestions(value, temp_trie)
+                    trie << temp_trie
                 end  
             else
-                comp = completion.as_a? # if not a hash it should be an array being the final options 
+                comp = completion.as_a? # if not a hash it should be an array
                 if comp
                 # create init suggestion list 
-                    lw = true 
                     comp.each do |i| 
-                        candidates << i.to_s 
+                        next if i.nil? 
+                        temp_trie = CryPromptTrie.new(i.to_s)
+                        update_suggestions(i, temp_trie) if i.class == YAML::Any || i.class == JSON::Any
+                        trie << temp_trie
                     end
                 end
             end
+        end
+     
+
+        # returns the succestions for the current line
+        # def suggestions(line : String, completion = @completion)
+        #     return nil if completion.nil? # if completion is a hash. ie will it have sub options 
+
+        #     sugs = [] of String
+        #     candidates = [] of String
+
+        #     # load the candidates from the hash
+        #     comp = completion.as_h?
+        #     if comp
+        #         # create init suggestion list 
+        #         comp.each do |k, v| 
+        #             candidates << k.to_s
+        #         end  
+        #     else
+        #         comp = completion.as_a? # if not a hash it should be an array being the final options 
+        #         if comp
+        #         # create init suggestion list 
+        #             lw = true 
+        #             comp.each do |i| 
+        #                 candidates << i.to_s 
+        #             end
+        #         end
+        #     end
 
 
-            # do the suggest on the actual word 
-            if candidates.size > 0
-                # suggest_print(sugs) 
-                spl = line.split(" ")
-                if spl.size > 1 
-                    # if more than one word recurse without the first word and suggest on that if the first word is in the mapping
-                    begin 
-                        sugs = suggestions(line.split(" ")[1..].join(" "), completion[ spl[0] ] ) if candidates.includes? spl[0].strip(" ")
-                    rescue 
-                        # clear_nextline() # clear the line if fail 
+        #     # do the suggest on the actual word 
+        #     if candidates.size > 0
+        #         # suggest_print(sugs) 
+        #         spl = line.split(" ")
+        #         if spl.size > 1 
+        #             # if more than one word recurse without the first word and suggest on that if the first word is in the mapping
+        #             begin 
+        #                 sugs = suggestions(line.split(" ")[1..].join(" "), completion[ spl[0] ] ) if candidates.includes? spl[0].strip(" ")
+        #             rescue 
+        #                 # clear_nextline() # clear the line if fail 
+        #             end
+        #         else
+        #         # suggest_print( sugs, spl[0] )
+        #             candidates.each do |c| 
+        #                 sugs << c if c.downcase.starts_with? spl[0].downcase 
+        #             end
+        #         end
+        #     end
+        #     return sugs 
+
+
+
+        # end
+
+
+        #returns an array of words from the sugtrie that fall in line with the given line
+        def suggestions(line : String, trie = @sugtrie) : Array(String) | Nil
+            tpar = [] of String
+            return tpar if trie.nil?
+
+            sp = line.split() # split based on spaces
+        
+            if sp.size < 1 
+                trie.nodes_to_string_array().each do |w| 
+                        tpar << w 
+                    # end
+                end
+            elsif sp.size == 1 # if we have only 1 word
+                if line.split("").last == " " # if the word doesnt end with a space  
+                    tmp = trie[sp.first]
+                    if tmp
+                        tmp.nodes_to_string_array().each do |w| 
+                            tpar << w 
+                        end
                     end
                 else
-                # suggest_print( sugs, spl[0] )
-                    candidates.each do |c| 
-                        sugs << c if c.downcase.starts_with? spl[0].downcase 
+                    trie.nodes_to_string_array().each do |w| 
+                        tpar << w if w.starts_with? line
                     end
-                end
+                end       
+            elsif sp.size > 1
+                tpar = suggestions(line[(sp.first.size + 1)..], trie[sp.first])
             end
-            return sugs 
-
-
-
+            return tpar
         end
-
-
-        # # take the suggestions and the last word in the chain and return an array of the next possible words 
-        # def sugestion_select(sugs, suggest_on)
-        #     retsugs = [] of String 
-        #     sugs.each do |suggestion| 
-        #         if suggest_on != "" 
-
-        #     end
-        # end
 
 
 
@@ -246,26 +305,6 @@ module CryPrompt
             print Keys::RightArrow * current_line_index
 
         end
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
