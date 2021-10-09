@@ -8,7 +8,7 @@ require "json"
 require "yaml"
 
 module CryPrompt
-    VERSION = "0.0.7"
+    VERSION = "0.0.8"
     
     class CryPrompt
         property history : History
@@ -138,6 +138,7 @@ module CryPrompt
                                 @word_completion = t if t 
                             end
                         end
+                        @word_completion = ""
                         completed_there = true 
                         next
                     when Keys::Shift_Tab # rotate upwards through list 
@@ -223,7 +224,7 @@ module CryPrompt
 
 
         def tabcomplete()
-            suggs = @autocomplete.suggestions(@current_line)
+            suggs = @autocomplete.suggestion_nodes(@current_line)
             if suggs # if we have suggestions
                 if suggs.size < 1 
                     # @autocomplete.clear_x_below(6, @line_index + @prompt.size)
@@ -240,7 +241,7 @@ module CryPrompt
                 tabcomplete()
                 return ""
             end
-            # suggs = @autocomplete.suggestions(@current_line)
+            suggs = @autocomplete.suggestion_nodes(@current_line)
            
 
             if suggs # if we have suggestions

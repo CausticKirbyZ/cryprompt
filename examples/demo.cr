@@ -6,7 +6,7 @@ require "yaml"
 yaml = YAML.parse "
 ---
 hello:
-  _description:
+  _description: this is a description for the key HELLO
   to:
     - you
     - person
@@ -35,8 +35,11 @@ Goodbye:
     - wont 
     - work 
 exit:
+  _description: Exits the program
 whoami:
+  _description: Runs the whoami command 
 clear:
+  _description: Clears the screen
 "
 
 json = JSON.parse %(

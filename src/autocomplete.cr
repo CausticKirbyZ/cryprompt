@@ -12,6 +12,7 @@ module CryPrompt
         # you still need to call update_suggestions to parse it 
         property completion : (JSON::Any | YAML::Any | Nil) = nil 
         property sugtrie : CryPromptTrie = CryPromptTrie.new()
+        property case_sensitive = false 
         
         def initialize()
 
@@ -30,7 +31,11 @@ module CryPrompt
                 # create init suggestion list 
                 comp.each do |key, value|
                     next if key == "_description" # ignore the description field as that is actually part of the parrent node
-                    temp_trie = CryPromptTrie.new(key.to_s) # create a node with the word set to the key from the completion hash
+                    if @case_sensitive
+                        temp_trie = CryPromptTrie.new(key.to_s) # create a node with the word set to the key from the completion hash
+                    else 
+                        temp_trie = CryPromptTrie.new(key.to_s.downcase) # create a node with the word set to the key from the completion hash
+                    end
                     begin 
                         temp_trie.description = value["_description"].to_s # set description if it exists
                     rescue 
@@ -54,8 +59,8 @@ module CryPrompt
     
 
 
-        #returns an array of words from the sugtrie that fall in line with the given line
-        def suggestions(line : String, trie = @sugtrie) : Array(String) | Nil
+        # returns an array of words from the sugtrie that fall in line with the given line
+        def suggestions(line : String, trie = @sugtrie) : Array(String)| Nil
             tpar = [] of String
             return tpar if trie.nil?
 
@@ -63,7 +68,7 @@ module CryPrompt
         
             if sp.size < 1 
                 trie.nodes_to_string_array().each do |w| 
-                        tpar << w 
+                    tpar << w 
                     # end
                 end
             elsif sp.size == 1 # if we have only 1 word
@@ -76,7 +81,11 @@ module CryPrompt
                     end
                 else
                     trie.nodes_to_string_array().each do |w| 
-                        tpar << w if w.starts_with? line
+                        if @case_sensitive
+                            tpar << w if w.starts_with? line
+                        else 
+                            tpar << w if w.downcase.starts_with? line.downcase 
+                        end
                     end
                 end       
             elsif sp.size > 1
@@ -85,21 +94,140 @@ module CryPrompt
             return tpar
         end
 
+        # returns an array of words from the sugtrie that fall in line with the given line
+        def suggestion_nodes(line : String, trie = @sugtrie) : Array(CryPromptTrie) | Nil
+            tpar = [] of CryPromptTrie
+            return tpar if trie.nil?
+
+            sp = line.split() # split based on spaces
+        
+            if sp.size < 1 
+                trie.nodes.each do |w| 
+                    tpar << w if w.word
+                    # end
+                end
+            elsif sp.size == 1 # if we have only 1 word
+                if line.split("").last == " " # if the word doesnt end with a space  
+                    tmp = trie[sp.first]
+                    if tmp
+                        tmp.nodes.each do |w| 
+                            tpar << w if w.word
+                        end
+                    end
+                else
+                    trie.nodes.each do |w| 
+                        if w.word
+                            if @case_sensitive
+                                tpar << w  if w.word.as(String).starts_with? line if w.word 
+                            else 
+                                tpar << w if w.word.as(String).downcase.starts_with? line.downcase if w.word
+                            end
+                        end
+                    end
+                end       
+            elsif sp.size > 1
+                tpar = suggestion_nodes(line[(sp.first.size + 1)..], trie[sp.first])
+            end
+            return tpar
+        end
+
+        
 
 
+
+
+        # # will render a suggestion box just below the word the person is typing 
+        # def render(opts : Array(String), current_line_index, word, tabc = -1 )
+        #     # clear the next 5 or 6 lines 
+        #     # take 5 lines 
+        #     # set background to gray for printed lines 
+        #     # draw a box with the ┐ └  ┘ ┌ ┬ ┴  ┤ ├ ┼
+        #     #
+
+        #     max_size = 0 
+        #     opts.each do |i|
+        #         if max_size < i.size  
+        #             max_size = i.size 
+        #         end
+        #     end
+
+        #     if max_size < 10
+        #         max_size = 10 
+        #     end
+        #     returnable = ""
+
+        #     str = String.build do |str|
+
+        #         # clear_x_below(7, current_line_index)
+        #         print Keys::ClearScreenBelow
+                
+        #         str << "\n" # move to next line 
+        #         # "┌─".colorize.fore(:green).mode(:bold)
+        #         word_start = current_line_index
+        #         # get to below the word 
+        #         # print Keys::RightArrow * current_line_index
+        #         str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┐\n".colorize.fore(:green).mode(:bold)
+        #         opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
+        #             if index == tabc 
+        #                 returnable = opt
+        #                 str <<  " " * (current_line_index - 2)
+        #                 str << "│ ".colorize.fore(:green).mode(:bold)
+        #                 str << opt.colorize.fore(:green).back(:blue).mode(:bold) 
+        #                 str << " " * (max_size - opt.size)
+        #                 str << "   │\n".colorize.fore(:green).mode(:bold)
+        #             else 
+        #                 str << " " * (current_line_index - 2)
+        #                 str << "│ ".colorize.fore(:green).mode(:bold)
+        #                 str << opt 
+        #                 str << " " * (max_size - opt.size)
+        #                 str << "   │\n".colorize.fore(:green).mode(:bold)
+        #             end
+        #         end
+        #         str << "#{" " * (current_line_index - 2 )}└#{"─" * (max_size + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size <= 5 
+        #         str << "#{" " * (current_line_index - 2 )}└Tab More#{"─" * (max_size - 8 + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size > 5 
+
+
+        #         str <<  Keys::UpArrow * Math.min(7, opts.size + 2 ) # need to account for the 2 boarder spaces
+        #         str << "\r"
+        #         str << Keys::RightArrow * ( current_line_index + word.size )
+        #     end
+
+        #     # print the suggestion box 
+        #     print str 
+
+
+        #     # return the portion of the highlighted word that isnt typed
+        #     ind = returnable.index(word)
+        #     if ind 
+        #         return returnable[( ind + word.size )..]
+        #     end
+        #     return ""
+
+
+
+        # end
 
         # will render a suggestion box just below the word the person is typing 
-        def render(opts : Array(String), current_line_index, word, tabc = -1 )
+        def render(opts : Array(CryPromptTrie), current_line_index, word, tabc = -1 )
             # clear the next 5 or 6 lines 
             # take 5 lines 
             # set background to gray for printed lines 
-            # draw a box with the ┐ └  ┘ ┌
+            # draw a box with the ┐ └  ┘ ┌ ┬ ┴  ┤ ├ ┼
             #
 
             max_size = 0 
-            opts.each do |i|
-                if max_size < i.size  
-                    max_size = i.size 
+            max_desc_size = 0 
+
+            opts.each_with_index do |i,ind|
+                if i.word 
+                    if max_size < i.word.as(String).size  
+                        max_size = i.word.as(String).size if i.word
+                    end
+                    if i.description#  && tabc == ind
+                        if max_desc_size < i.description.as(String).size   
+                            max_desc_size = i.description.as(String).size if i.description
+                        end
+                    end
                 end
             end
 
@@ -108,35 +236,70 @@ module CryPrompt
             end
             returnable = ""
 
-            str = String.build do |str|
-
-                # clear_x_below(7, current_line_index)
-                print Keys::ClearScreenBelow
+            str = String.build do |str| # build the multi line string for suggestions and descriptions to print it all at once
+                str << Keys::ClearScreenBelow
                 
                 str << "\n" # move to next line 
                 # "┌─".colorize.fore(:green).mode(:bold)
                 word_start = current_line_index
                 # get to below the word 
                 # print Keys::RightArrow * current_line_index
-                str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┐\n".colorize.fore(:green).mode(:bold)
-                opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
-                    if index == tabc 
-                        returnable = opt
-                        str <<  " " * (current_line_index - 2)
-                        str << "│ ".colorize.fore(:green).mode(:bold)
-                        str << opt.colorize.fore(:green).back(:blue).mode(:bold) 
-                        str << " " * (max_size - opt.size)
-                        str << "   │\n".colorize.fore(:green).mode(:bold)
-                    else 
-                        str << " " * (current_line_index - 2)
-                        str << "│ ".colorize.fore(:green).mode(:bold)
-                        str << opt 
-                        str << " " * (max_size - opt.size)
-                        str << "   │\n".colorize.fore(:green).mode(:bold)
+                if max_desc_size < 1 
+                    str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┐\n".colorize.fore(:green).mode(:bold) 
+                    opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
+                        if index == tabc 
+                            returnable = opt.word.as(String)
+                            str <<  " " * (current_line_index - 2)
+                            str << "│ ".colorize.fore(:green).mode(:bold)
+                            str << opt.word.as(String).colorize.fore(:green).back(:blue).mode(:bold) if opt.word
+                            str << " " * (max_size - opt.word.as(String).size) 
+                            str << "   │\n".colorize.fore(:green).mode(:bold)
+                        else 
+                            str << " " * (current_line_index - 2)
+                            str << "│ ".colorize.fore(:green).mode(:bold)
+                            str << opt.word.as(String) 
+                            str << " " * (max_size - opt.word.as(String).size)
+                            str << "   │\n".colorize.fore(:green).mode(:bold)
+                        end
                     end
+                    str << "#{" " * (current_line_index - 2 )}└#{"─" * (max_size + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size <= 5 
+                    str << "#{" " * (current_line_index - 2 )}└Tab More#{"─" * (max_size - 8 + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size > 5 
+                else 
+                    str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┬#{"─" * ( max_desc_size + 4 )}┐\n".colorize.fore(:green).mode(:bold) 
+                    opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
+                        if index == tabc 
+                            returnable = opt.word.as(String)
+                            str << " " * (current_line_index - 2)
+                            str << "│ ".colorize.fore(:green).mode(:bold)
+                            str << opt.word.as(String).colorize.fore(:green).back(:blue).mode(:bold) 
+                            str << " " * (max_size - opt.word.as(String).size)
+                            str << "   │ ".colorize.fore(:green).mode(:bold)
+                            if opt.description
+                                str << opt.description 
+                                str << " " * Math.max(max_desc_size - opt.description.as(String).size, 0)
+                            else 
+                                str << " " * max_desc_size
+                            end 
+                            str << "   │\n".colorize.fore(:green).mode(:bold)
+
+                        else 
+                            str << " " * (current_line_index - 2)
+                            str << "│ ".colorize.fore(:green).mode(:bold)
+                            str << opt.word.as(String)
+                            str << " " * (max_size - opt.word.as(String).size)
+                            str << "   │ ".colorize.fore(:green).mode(:bold)
+                            if opt.description
+                                str << opt.description
+                                str << " " * Math.max(max_desc_size - opt.description.as(String).size, 0)
+                            else 
+                                str << " " * max_desc_size
+                            end 
+                            str << "   │\n".colorize.fore(:green).mode(:bold)
+                        end
+                    end
+                    str << "#{" " * (current_line_index - 2 )}└#{"─" * (max_size + 4 ) }┴#{"─" * ( max_desc_size + 4) }┘".colorize.fore(:green).mode(:bold) if opts.size <= 5 
+                    str << "#{" " * (current_line_index - 2 )}└Tab More#{"─" * (max_size - 8 + 4 ) }┴#{"─" * ( max_desc_size + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size > 5 
                 end
-                str << "#{" " * (current_line_index - 2 )}└#{"─" * (max_size + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size <= 5 
-                str << "#{" " * (current_line_index - 2 )}└Tab More#{"─" * (max_size - 8 + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size > 5 
 
 
                 str <<  Keys::UpArrow * Math.min(7, opts.size + 2 ) # need to account for the 2 boarder spaces
@@ -158,6 +321,8 @@ module CryPrompt
 
 
         end
+
+        
 
         # NOT WORKING (probably due to scos/rc)
         # draws the box with the suggestions in it. 
