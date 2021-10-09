@@ -106,16 +106,7 @@ module CryPrompt
                         downarrowpress()
                     end
 
-                else # handle all the escaped/special chars  and also copy and pasted data
-                    # if char == Keys::Backspace # remove from current line 
-                    #     next if @current_line.size <= 0 
-                    #     next if @line_index <= 0
-                    #     t = @current_line.split("")
-                    #     t.delete_at( @line_index - 1 ) 
-                    #     @current_line = t.join
-                    #     @line_index -= 1 #  if @line_index > 0
-                    # else
-                    # end
+                else 
                     
                     case char 
                     when Keys::Backspace
@@ -288,7 +279,6 @@ module CryPrompt
 
 
         def uparrowpress() 
-            # print "\r #{" " * 80 }\r#{@prompt}"
             print Keys::ClearScreenBelow
             tmp = @history.up()
             if tmp
@@ -298,9 +288,7 @@ module CryPrompt
         end
 
         def downarrowpress()
-            # print "\r #{" " * 80 }\r#{@prompt}"
-            @current_line = @history.down()
-            # @history.down()                        
+            @current_line = @history.down()                    
             @line_index = @current_line.size 
             print "\r#{ Keys::RightArrow * (@prompt.size + @current_line.size) }"
             print Keys::ClearScreenBelow
