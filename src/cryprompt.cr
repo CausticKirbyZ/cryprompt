@@ -39,6 +39,7 @@ module CryPrompt
 
         protected def get_line()
             @current_line = ""
+            @word_completion = ""
             @line_index = 0
             @history.index = 0
             
@@ -66,11 +67,10 @@ module CryPrompt
                     break 
                 end
 
-                if char == Keys::Ctrl_C # handle ctrl c 
-                    
+                if char == Keys::Ctrl_C # handle ctrl c                     
                     print "#{Keys::ClearScreenBelow}\n"
                     raise Ctrl_C_Exception.new("Ctrl C Pressed")
-                    return nil
+                    # return nil
                 end
 
                 if char == Keys::Ctrl_D # debug key command
@@ -138,7 +138,7 @@ module CryPrompt
                                 @word_completion = t if t 
                             end
                         end
-                        @word_completion = ""
+                        # @word_completion = ""
                         completed_there = true 
                         next
                     when Keys::Shift_Tab # rotate upwards through list 
@@ -206,6 +206,7 @@ module CryPrompt
                     tabcomplete() unless Keys.is_arrow? char
                 end
                 @tab_count = -1
+                @word_completion = ""
 
 
 

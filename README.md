@@ -1,15 +1,19 @@
 # CryPrompt
 
-A crystal library for creating easy prompting cli tools in crystal.  I Wanted a prompting kit with easy to use tab completion/suggestion while also having a nice easy hierarchy for the suggestion table. 
+A crystal library for creating easy prompting cli tools in crystal.  I Wanted a prompting kit with easy to use tab completion/suggestion while also having a nice easy hierarchy for the suggestion table. Cryprompt also now features a suggestion description in its table with the opional ```_description``` option
 
 <br>
 <img src="./pics/animationdemo.gif"> 
+
+<br>
+<img src="./pics/animationdemo2.gif"> 
 
 ## Features:
 * Text box suggestions  
 * easy suggestion path implementaion via yaml/json
 * tab complete (mostly)
 * multiple suggestions 
+* description options 
 
 ## Suggestion Table
 The flow of suggested material is in the form of a hash and can be written in json or yaml quite easily. 
@@ -17,6 +21,7 @@ The flow of suggested material is in the form of a hash and can be written in js
 ex. 
 ```yaml
 hello: 
+  _description: this is a descroption for hello
   to:
     - you
     - jeff
@@ -24,8 +29,10 @@ hello:
     - jane
   world:
   everyone:
+    _description: this is a description for everyone
     with:
       a:
+        _description: this is a description for a
         - hat
         - shirt
         - shoes
@@ -56,6 +63,7 @@ require "cryprompt"
 # Development
 
 ## ToDo:
+* the code is fairly messy.. should be cleaned up 
 * hitting tab will autocomplete if only 1 suggestion exists 
 * expose some options to change the autoprompt box color 
 * refactor the autocomplete class to use escape codes for faster/easier cursor management 
@@ -63,7 +71,7 @@ require "cryprompt"
 
 ## Bugs:
 * pasting with multiple lines is broken. 
-* colored prompts will break the location of the cursor apearance
+* colored prompts will break the location of the cursor apearance... need to fix that
 
 
 ## Contributing

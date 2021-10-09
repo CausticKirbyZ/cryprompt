@@ -80,6 +80,7 @@ while true
         ans = t.ask()
     rescue e : CryPrompt::Ctrl_C_Exception
         # puts "You pressed ctrl+c "
+        ans = nil 
     end
     if ans
         break if ans.downcase.strip() == "exit"
