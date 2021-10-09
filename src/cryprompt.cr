@@ -259,16 +259,6 @@ module CryPrompt
                 if suggs.size < 1 
                     print Keys::ClearScreenBelow
                     return 
-                # elsif  suggs.size == 1 # only 1 thing to suggest so tab complete it 
-                    # clslast  =  @current_line.split(" ").last 
-                    # indx =  suggs[0].index(clslast)
-                    # if clslast && indx 
-                    #     t = clslast[(indx + clslast.size)..]
-                    #     return t if t
-                    # end
-                    # return suggs[0][@current_line.split(" ").last.size..]
-                    # return ""
-
                 end
 
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)

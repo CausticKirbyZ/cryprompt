@@ -2,8 +2,8 @@ name: cryprompt
 version: 0.0.7
 
 authors:
-  - CausticKirbyZ <your-email-here>
+  - CausticKirbyZ
 
 crystal: 1.1.1
 
-license: MIT
+license: GNU GPL3

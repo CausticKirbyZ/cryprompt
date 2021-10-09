@@ -51,57 +51,7 @@ module CryPrompt
                 end
             end
         end
-     
-
-        # returns the succestions for the current line
-        # def suggestions(line : String, completion = @completion)
-        #     return nil if completion.nil? # if completion is a hash. ie will it have sub options 
-
-        #     sugs = [] of String
-        #     candidates = [] of String
-
-        #     # load the candidates from the hash
-        #     comp = completion.as_h?
-        #     if comp
-        #         # create init suggestion list 
-        #         comp.each do |k, v| 
-        #             candidates << k.to_s
-        #         end  
-        #     else
-        #         comp = completion.as_a? # if not a hash it should be an array being the final options 
-        #         if comp
-        #         # create init suggestion list 
-        #             lw = true 
-        #             comp.each do |i| 
-        #                 candidates << i.to_s 
-        #             end
-        #         end
-        #     end
-
-
-        #     # do the suggest on the actual word 
-        #     if candidates.size > 0
-        #         # suggest_print(sugs) 
-        #         spl = line.split(" ")
-        #         if spl.size > 1 
-        #             # if more than one word recurse without the first word and suggest on that if the first word is in the mapping
-        #             begin 
-        #                 sugs = suggestions(line.split(" ")[1..].join(" "), completion[ spl[0] ] ) if candidates.includes? spl[0].strip(" ")
-        #             rescue 
-        #                 # clear_nextline() # clear the line if fail 
-        #             end
-        #         else
-        #         # suggest_print( sugs, spl[0] )
-        #             candidates.each do |c| 
-        #                 sugs << c if c.downcase.starts_with? spl[0].downcase 
-        #             end
-        #         end
-        #     end
-        #     return sugs 
-
-
-
-        # end
+    
 
 
         #returns an array of words from the sugtrie that fall in line with the given line
