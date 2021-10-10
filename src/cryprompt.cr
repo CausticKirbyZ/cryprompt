@@ -233,7 +233,7 @@ module CryPrompt
                     return 
                 end
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
-                @autocomplete.render(suggs, @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last  )
+                @autocomplete.render(suggs, @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last , @prompt.size, @current_line.size )
             end
         end
 
@@ -255,7 +255,7 @@ module CryPrompt
                 end
 
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
-                return @autocomplete.render(suggs[Math.min(tabcount, Math.max(tabcount - 4, 0))..], @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last, Math.min(tabcount, 4 )  )
+                return @autocomplete.render(suggs[Math.min(tabcount, Math.max(tabcount - 4, 0))..], @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last, Math.min(tabcount, 4 ) , @prompt.size, @current_line.size  )
                 # @autocomplete.render_box( suggs[Math.min(tabcount,Math.max(tabcount - 4 , 0))..])  # didnt work 
                 return ""
             end

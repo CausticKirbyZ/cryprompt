@@ -208,7 +208,7 @@ module CryPrompt
         # end
 
         # will render a suggestion box just below the word the person is typing 
-        def render(opts : Array(CryPromptTrie), current_line_index, word, tabc = -1 )
+        def render(opts : Array(CryPromptTrie), current_line_index, word, tabc = -1 , prompt_size = 2, line_size = 0 )  #default prompt size can be "> "
             # clear the next 5 or 6 lines 
             # take 5 lines 
             # set background to gray for printed lines 
@@ -243,8 +243,12 @@ module CryPrompt
                 # "┌─".colorize.fore(:green).mode(:bold)
                 word_start = current_line_index
                 # get to below the word 
-                # print Keys::RightArrow * current_line_index
-                if max_desc_size < 1 
+                # print Keys::RightArrow * current_line_index     72    -   1           10         6      19               
+                if ( max_desc_size < 1 || ( (get_terminal_size().ws_col.to_i - ( line_size + max_size + 6 + max_desc_size + 5 + prompt_size ) ) < 20 ) ) 
+                    if ( (get_terminal_size().ws_col.to_i - ( current_line_index + max_size + 6 + prompt_size ) ) < 5 )
+                        print Keys::ClearScreenBelow
+                        break 
+                    end
                     str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┐\n".colorize.fore(:green).mode(:bold) 
                     opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
                         if index == tabc 
@@ -264,7 +268,11 @@ module CryPrompt
                     end
                     str << "#{" " * (current_line_index - 2 )}└#{"─" * (max_size + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size <= 5 
                     str << "#{" " * (current_line_index - 2 )}└Tab More#{"─" * (max_size - 8 + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size > 5 
-                else 
+                else # render the description table too
+                    if ( (get_terminal_size().ws_col.to_i - ( current_line_index + max_size + 11 + max_desc_size + prompt_size ) ) < 5 )
+                        print Keys::ClearScreenBelow
+                        break 
+                    end
                     str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┬#{"─" * ( max_desc_size + 4 )}┐\n".colorize.fore(:green).mode(:bold) 
                     opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
                         if index == tabc 
@@ -421,9 +429,31 @@ module CryPrompt
 
         end
 
+        # code below taken from stugol on form page https://github.com/crystal-lang/crystal/issues/2061
+        # used to get windows size 
+        # not 100% sure how portable this is but works on arch/manjaro linux 
+        lib C
+            struct Winsize
+                ws_row : UInt16         # rows, in characters */
+                ws_col : UInt16         # columns, in characters */
+                ws_xpixel : UInt16  # horizontal size, pixels
+                ws_ypixel : UInt16  # vertical size, pixels
+            end
+            fun ioctl(fd : Int32, request : UInt32, winsize : C::Winsize*) : Int32
+        end
+
+        def get_terminal_size()
+            C.ioctl(0, 21523, out screen_size)      # magic number
+            screen_size
+        end
 
 
           
         # end code
     end
+
+    
+
+
+
 end
