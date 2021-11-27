@@ -8,7 +8,7 @@ require "json"
 require "yaml"
 
 module CryPrompt
-    VERSION = "0.0.8"
+    VERSION = "0.1.0"
     
     class CryPrompt
         property history : History

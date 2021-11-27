@@ -17,6 +17,7 @@ hello:
     - my
     - happiness
 Goodbye: 
+  _description: this is a description field for Goodbye
   my: 
     - sweet 
     - buttery
