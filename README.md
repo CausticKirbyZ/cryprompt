@@ -40,6 +40,14 @@ hello:
 
 The word "hello" defines the base of this tree and will have 2 sub suggestions "to" and "world".
 
+## Demo App
+run the demo program below  
+```
+git clone https://github.com/CausticKirbyZ/cryprompt.git
+cd cryprompt
+make && ./bin/demo
+```
+
 
 ## Installation
 
