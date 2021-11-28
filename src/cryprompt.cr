@@ -33,7 +33,8 @@ module CryPrompt
         # This will prompt the user for an input
         # returns a string or nil if nothing is given
         def ask() : String | Nil
-            @printer.print_prompt()
+            # @printer.print_prompt()
+            print prompt
             (x = get_line()) ? x : nil
         end
 
