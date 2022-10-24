@@ -42,7 +42,7 @@ module CryPrompt
             @prompt = ap.map(&.to_s).join
             # make temp string of prompt to remove color 
             tmp = @prompt 
-            p tmp 
+            # p tmp 
             # remove the collor codes of "\e[<digits>m"
             # color_regex = /\e\[\d+(m|;\d+m)/
             color_regex = /\e\[(\d|;\d)+m/
