@@ -73,7 +73,9 @@ json = JSON.parse %(
 t = CryPrompt::CryPrompt.new();
 t.autocomplete.completion = yaml
 t.autocomplete.update_suggestions()
-t.prompt = "newprompt! > "
+# t.prompt = "newprompt! > "
+t.set_prompt [ "( ".colorize( :green ) , "my ", "new".colorize(:blue).back(:red).underline.blink , "prompt" , ")".colorize(:green) , "> ".colorize(:red)  ]
+
 t.autoprompt = true
 
 

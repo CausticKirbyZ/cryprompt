@@ -6,13 +6,17 @@ require "./autocomplete"
 
 require "json"
 require "yaml"
+require "colorize"
+
+
 
 module CryPrompt
-    VERSION = "0.1.0"
+    VERSION = "0.1.1"
     
     class CryPrompt
         property history : History
-        property prompt : String = "(#{"CryPrompt=".to_s}v#{VERSION})> "
+        property prompt : String = "(#{"CryPrompt=".to_s}v#{VERSION})> " 
+        property prompt_size : Int32 
         # property completion : ( JSON::Any | YAML::Any | Nil) = nil
         property autoprompt : Bool = true
         property logging : String | Nil = nil
@@ -27,7 +31,31 @@ module CryPrompt
             @tab_count  = -1 # keep track of consecutive tabs to cycle through suggestions 
             @line_index = 0 # current cursor index in the current line 
             @word_completion = "" # the part of the word to be completed 
+            @prompt_size = @prompt.size # if set with color string it will be off 
         end
+
+
+
+
+        def set_prompt( ap : Array(Colorize::Object | String ) ) 
+            # set the new prompt for collored objects 
+            @prompt = ap.map(&.to_s).join
+            # make temp string of prompt to remove color 
+            tmp = @prompt 
+            p tmp 
+            # remove the collor codes of "\e[<digits>m"
+            # color_regex = /\e\[\d+(m|;\d+m)/
+            color_regex = /\e\[(\d|;\d)+m/
+            while ff = tmp.match(color_regex)
+                tmp = tmp.sub(color_regex,"")               
+            end
+            
+            @prompt_size = tmp.size 
+            
+
+            # puts @prompt_size
+
+        end 
 
 
         # This will prompt the user for an input
@@ -157,11 +185,11 @@ module CryPrompt
                         t.delete_at( @line_index )
                         @current_line = t.join
                     when Keys::Home
-                        print "\r#{Keys::RightArrow * @prompt.size}"
+                        print "\r#{Keys::RightArrow * @prompt_size}"
                         @line_index = 0
                         next 
                     when Keys::End
-                        print "\r#{ Keys::RightArrow * (@prompt.size + @current_line.size) }"
+                        print "\r#{ Keys::RightArrow * (@prompt_size + @current_line.size) }"
                         @line_index = @current_line.size
                         next 
                     when Keys::PgDown # not sure if i want to do anything with these yet.... hmmm 
@@ -224,17 +252,16 @@ module CryPrompt
         end
 
 
-
         def tabcomplete()
             suggs = @autocomplete.suggestion_nodes(@current_line)
             if suggs # if we have suggestions
                 if suggs.size < 1 
-                    # @autocomplete.clear_x_below(6, @line_index + @prompt.size)
+                    # @autocomplete.clear_x_below(6, @line_index + @prompt_size)
                     print Keys::ClearScreenBelow
                     return 
                 end
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
-                @autocomplete.render(suggs, @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last , @prompt.size, @current_line.size )
+                @autocomplete.render(suggs, @line_index + @prompt_size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last , @prompt_size, @current_line.size )
             end
         end
 
@@ -256,7 +283,7 @@ module CryPrompt
                 end
 
                 # @autocomplete.print_suggestions(suggs, @current_line.split(" ").last, @line_index)
-                return @autocomplete.render(suggs[Math.min(tabcount, Math.max(tabcount - 4, 0))..], @line_index + @prompt.size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last, Math.min(tabcount, 4 ) , @prompt.size, @current_line.size  )
+                return @autocomplete.render(suggs[Math.min(tabcount, Math.max(tabcount - 4, 0))..], @line_index + @prompt_size - ( @current_line.split(" ").last.size ), @current_line.split(" ").last, Math.min(tabcount, 4 ) , @prompt_size, @current_line.size  )
                 # @autocomplete.render_box( suggs[Math.min(tabcount,Math.max(tabcount - 4 , 0))..])  # didnt work 
                 return ""
             end
@@ -293,7 +320,7 @@ module CryPrompt
         def downarrowpress()
             @current_line = @history.down()                    
             @line_index = @current_line.size 
-            print "\r#{ Keys::RightArrow * (@prompt.size + @current_line.size) }"
+            print "\r#{ Keys::RightArrow * (@prompt_size + @current_line.size) }"
             print Keys::ClearScreenBelow
         end
 
