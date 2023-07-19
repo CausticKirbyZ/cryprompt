@@ -74,8 +74,10 @@ t = CryPrompt::CryPrompt.new();
 t.autocomplete.completion = yaml
 t.autocomplete.update_suggestions()
 # t.prompt = "newprompt! > "
-t.set_prompt [ "( ".colorize( :green ) , "my ", "new".colorize(:blue).back(:red).underline.blink , "prompt" , ")".colorize(:green) , "> ".colorize(:red)  ]
-
+t.set_prompt [ "( ".colorize( :green ) , "my ", "new".colorize(:blue).back(:red).underline.blink , " prompt" , ")".colorize(:green) , "> ".colorize(:red)  ]
+t.autocomplete.box_color = Colorize::ColorANSI.new(:cyan)
+t.autocomplete.box_text_background_color = Colorize::ColorANSI.new(:green)
+t.autocomplete.box_text_foreground_color = Colorize::ColorANSI.new(:red)
 t.autoprompt = true
 
 

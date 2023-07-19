@@ -13,6 +13,12 @@ module CryPrompt
         property completion : (JSON::Any | YAML::Any | Nil) = nil 
         property sugtrie : CryPromptTrie = CryPromptTrie.new()
         property case_sensitive = false 
+        property box_color : Colorize::Color = Colorize::ColorANSI.new(:green)
+        property box_text_background_color : Colorize::Color = Colorize::ColorANSI.new(:blue)
+        property box_text_foreground_color : Colorize::Color = Colorize::ColorANSI.new(:green)
+
+
+
         
         def initialize()
 
@@ -178,64 +184,64 @@ module CryPrompt
                         print Keys::ClearScreenBelow
                         break 
                     end
-                    str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┐\n".colorize.fore(:green).mode(:bold) 
+                    str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┐\n".colorize.fore(@box_color).mode(:bold) 
                     opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
                         if index == tabc 
                             returnable = opt.word.as(String)
                             str <<  " " * (current_line_index - 2)
-                            str << "│ ".colorize.fore(:green).mode(:bold)
-                            str << opt.word.as(String).colorize.fore(:green).back(:blue).mode(:bold) if opt.word
+                            str << "│ ".colorize.fore(@box_color).mode(:bold)
+                            str << opt.word.as(String).colorize.fore(@box_text_foreground_color).back(@box_text_background_color).mode(:bold) if opt.word
                             str << " " * (max_size - opt.word.as(String).size) 
-                            str << "   │\n".colorize.fore(:green).mode(:bold)
+                            str << "   │\n".colorize.fore(@box_color).mode(:bold)
                         else 
                             str << " " * (current_line_index - 2)
-                            str << "│ ".colorize.fore(:green).mode(:bold)
+                            str << "│ ".colorize.fore(@box_color).mode(:bold)
                             str << opt.word.as(String) 
                             str << " " * (max_size - opt.word.as(String).size)
-                            str << "   │\n".colorize.fore(:green).mode(:bold)
+                            str << "   │\n".colorize.fore(@box_color).mode(:bold)
                         end
                     end
-                    str << "#{" " * (current_line_index - 2 )}└#{"─" * (max_size + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size <= 5 
-                    str << "#{" " * (current_line_index - 2 )}└Tab More#{"─" * (max_size - 8 + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size > 5 
+                    str << "#{" " * (current_line_index - 2 )}└#{"─" * (max_size + 4 ) }┘".colorize.fore(@box_color).mode(:bold) if opts.size <= 5 
+                    str << "#{" " * (current_line_index - 2 )}└Tab More#{"─" * (max_size - 8 + 4 ) }┘".colorize.fore(@box_color).mode(:bold) if opts.size > 5 
                 else # render the description table too
                     if ( (get_terminal_size().ws_col.to_i - ( current_line_index + max_size + 11 + max_desc_size + prompt_size ) ) < 5 )
                         print Keys::ClearScreenBelow
                         break 
                     end
-                    str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┬#{"─" * ( max_desc_size + 4 )}┐\n".colorize.fore(:green).mode(:bold) 
+                    str << "#{" " * (current_line_index - 2 )}┌#{"─" * ( max_size + 4 ) }┬#{"─" * ( max_desc_size + 4 )}┐\n".colorize.fore(@box_color).mode(:bold) 
                     opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
                         if index == tabc 
                             returnable = opt.word.as(String)
                             str << " " * (current_line_index - 2)
-                            str << "│ ".colorize.fore(:green).mode(:bold)
-                            str << opt.word.as(String).colorize.fore(:green).back(:blue).mode(:bold) 
+                            str << "│ ".colorize.fore(@box_color).mode(:bold)
+                            str << opt.word.as(String).colorize.fore(@box_text_foreground_color).back(@box_text_background_color).mode(:bold) 
                             str << " " * (max_size - opt.word.as(String).size)
-                            str << "   │ ".colorize.fore(:green).mode(:bold)
+                            str << "   │ ".colorize.fore(@box_color).mode(:bold)
                             if opt.description
                                 str << opt.description 
                                 str << " " * Math.max(max_desc_size - opt.description.as(String).size, 0)
                             else 
                                 str << " " * max_desc_size
                             end 
-                            str << "   │\n".colorize.fore(:green).mode(:bold)
+                            str << "   │\n".colorize.fore(@box_color).mode(:bold)
 
                         else 
                             str << " " * (current_line_index - 2)
-                            str << "│ ".colorize.fore(:green).mode(:bold)
+                            str << "│ ".colorize.fore(@box_color).mode(:bold)
                             str << opt.word.as(String)
                             str << " " * (max_size - opt.word.as(String).size)
-                            str << "   │ ".colorize.fore(:green).mode(:bold)
+                            str << "   │ ".colorize.fore(@box_color).mode(:bold)
                             if opt.description
                                 str << opt.description
                                 str << " " * Math.max(max_desc_size - opt.description.as(String).size, 0)
                             else 
                                 str << " " * max_desc_size
                             end 
-                            str << "   │\n".colorize.fore(:green).mode(:bold)
+                            str << "   │\n".colorize.fore(@box_color).mode(:bold)
                         end
                     end
-                    str << "#{" " * (current_line_index - 2 )}└#{"─" * (max_size + 4 ) }┴#{"─" * ( max_desc_size + 4) }┘".colorize.fore(:green).mode(:bold) if opts.size <= 5 
-                    str << "#{" " * (current_line_index - 2 )}└Tab More#{"─" * (max_size - 8 + 4 ) }┴#{"─" * ( max_desc_size + 4 ) }┘".colorize.fore(:green).mode(:bold) if opts.size > 5 
+                    str << "#{" " * (current_line_index - 2 )}└#{"─" * (max_size + 4 ) }┴#{"─" * ( max_desc_size + 4) }┘".colorize.fore(@box_color).mode(:bold) if opts.size <= 5 
+                    str << "#{" " * (current_line_index - 2 )}└Tab More#{"─" * (max_size - 8 + 4 ) }┴#{"─" * ( max_desc_size + 4 ) }┘".colorize.fore(@box_color).mode(:bold) if opts.size > 5 
                 end
 
 
@@ -284,21 +290,21 @@ module CryPrompt
                 str << Keys::LeftArrow * 2 # offset so the suggestions are directly underneath the typing 
                 
                 #start drawing the suggestion box 
-                str << "┌#{"─" * ( min_width_size + 4 ) }┐".colorize.fore(:green).mode(:bold)
+                str << "┌#{"─" * ( min_width_size + 4 ) }┐".colorize.fore(@box_color).mode(:bold)
                 opts[0..Math.min(4,opts.size)].each_with_index do |opt,index|
                     str << "\e[#{min_width_size + 6}#{Keys::DownArrow}" # move cursor back to box start and down a line 
-                    str << "│ ".colorize.fore(:green).mode(:bold) # next line draw the box 
+                    str << "│ ".colorize.fore(@box_color).mode(:bold) # next line draw the box 
 
                     if index == selected_index
-                        str << opt.colorize.fore(:green).back(:blue).mode(:bold) 
+                        str << opt.colorize.fore(@box_text_foreground_color).back(@box_text_background_color).mode(:bold) 
                     else 
                         str << opt 
                     end
 
                     str << " " * (min_width_size - opt.size) # pad the rest of the line after opt with spaces
-                    str << "│".colorize.fore(:green).mode(:bold) # print the last box 
+                    str << "│".colorize.fore(@box_color).mode(:bold) # print the last box 
                 end
-                str << "└#{"─" * (min_width_size + 4 ) }┘".colorize.fore(:green).mode(:bold)
+                str << "└#{"─" * (min_width_size + 4 ) }┘".colorize.fore(@box_color).mode(:bold)
             end
             print str 
 
