@@ -11,7 +11,7 @@ require "colorize"
 
 
 module CryPrompt
-    VERSION = "0.1.1"
+    VERSION = "0.1.2"
     
     class CryPrompt
         property history : History
